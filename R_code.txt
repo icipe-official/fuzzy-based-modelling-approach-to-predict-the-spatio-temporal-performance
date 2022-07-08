@@ -1,0 +1,84 @@
+library(sets) 
+
+sets_options("universe", seq(1, 100, 0.5))
+
+variables <- set(
+ 
+  temperature = fuzzy_partition(varnames = c(very_bad = 7, acceptable = 10, Fairly_acceptable = 15, good = 20, perfect = 26, bad = 30, extre_bad = 35),
+                               
+                                sd = 5.0),
+ 
+ 
+ 
+ 
+ 
+  Ro = fuzzy_partition(varnames = c(very_bad= 0.006, bad = 0.13, ok = 14.22, perfect = 15),
+                       
+                       FUN = fuzzy_cone, radius = 10)
+ 
+)
+
+
+
+rules <- set(
+ 
+  fuzzy_rule(temperature %is% good, Ro %is% ok),
+ 
+  fuzzy_rule(temperature %is% extre_bad , Ro %is% very_bad),
+ 
+  fuzzy_rule(temperature %is% bad , Ro %is% bad),
+ 
+  fuzzy_rule(temperature %is% Fairly_acceptable , Ro %is% bad),
+ 
+  fuzzy_rule(temperature %is% very_bad , Ro %is% very_bad),
+ 
+  fuzzy_rule(temperature %is% acceptable, Ro %is% bad),
+ 
+  fuzzy_rule(temperature %is% perfect, Ro %is% perfect)
+ 
+)
+
+model <- fuzzy_system(variables, rules)
+
+print(model)
+
+plot(model)
+
+null=unique(crop_master)
+
+#Validation<- read.csv("E:/Tuta distribution (2)/performance assessement .csv")
+
+sqrt(mean((Validation$ro.observed - Validation$Predicted)^2))
+
+
+
+
+Temp_Data <- read.csv("D:/ICIPE_Projects/Test_Temp_Data.csv")
+
+Temp_Data$TS = round(Temp_Data$TS)
+
+View(Temp_Data)
+
+
+
+
+
+
+vector = c()
+
+for(i in 1:nrow(Temp_Data)) {
+  example.2 <- fuzzy_inference(model, list(temperature = Temp_Data[i,3]))
+ 
+  prediction <- gset_defuzzify(example.2, "largestofmax")
+ 
+  vector = c(vector, prediction)
+ 
+ 
+ 
+}
+
+Temp_Data$Pred <- vector
+Temp_Data$Pred[Temp_Data$Pred < 10] <- 0
+Temp_Data$Pred[Temp_Data$Pred > 35] <- 0
+
+View(Temp_Data)
